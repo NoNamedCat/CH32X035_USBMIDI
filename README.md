@@ -1,4 +1,4 @@
-# CH32X035 USB MIDI Library
+![CH32X035 USB MIDI Library](img/bb7fb7ca-e147-4a9a-8a16-39f2ecf78176.png)
 
 A full-featured USB MIDI device library for the WCH CH32X035 RISC-V microcontroller series.
 
