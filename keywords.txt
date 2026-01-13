@@ -1,0 +1,34 @@
+#######################################
+# Syntax Coloring Map for CH32X035_USBMIDI
+#######################################
+
+#######################################
+# Datatypes (KEYWORD1)
+#######################################
+
+USBMIDI	KEYWORD1
+USBMIDI_	KEYWORD1
+
+#######################################
+# Methods and Functions (KEYWORD2)
+#######################################
+
+begin	KEYWORD2
+poll	KEYWORD2
+sendPacket	KEYWORD2
+sendNoteOn	KEYWORD2
+sendNoteOff	KEYWORD2
+sendControlChange	KEYWORD2
+sendProgramChange	KEYWORD2
+sendPitchBend	KEYWORD2
+sendPolyPressure	KEYWORD2
+sendAfterTouch	KEYWORD2
+sendRealTime	KEYWORD2
+setHandleNoteOn	KEYWORD2
+setHandleNoteOff	KEYWORD2
+setHandleControlChange	KEYWORD2
+setHandleProgramChange	KEYWORD2
+setHandlePitchBend	KEYWORD2
+setHandleAfterTouch	KEYWORD2
+setHandlePolyPressure	KEYWORD2
+setHandleRealTime	KEYWORD2
