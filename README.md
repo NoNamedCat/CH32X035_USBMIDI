@@ -59,26 +59,29 @@ void loop() {
 
 ### 2. Sending MIDI Data
 
-Send notes, control changes, and more using simple methods.
+It is recommended to avoid `delay()` so that `USBMIDI.poll()` runs continuously. Here is a non-blocking example using `millis()`:
 
 ```cpp
+unsigned long lastTime = 0;
+bool noteOn = false;
+
 void loop() {
-    // Send Note On: Channel 1 (0-15), Note 60 (C4), Velocity 127
-    USBMIDI.sendNoteOn(0, 60, 127);
-    delay(500);
-
-    // Send Note Off: Channel 1, Note 60
-    USBMIDI.sendNoteOff(0, 60, 0);
-    delay(500);
-
-    // Send Control Change: Channel 1, Controller 1 (Mod Wheel), Value 100
-    USBMIDI.sendControlChange(0, 1, 100);
-
-    // Send Pitch Bend: Channel 1, Value 0 (Center) -> Range: -8192 to 8191
-    USBMIDI.sendPitchBend(0, 0);
-    
-    // Handle USB communication
+    // 1. ALWAYS poll USB first
     USBMIDI.poll();
+
+    // 2. Non-blocking timer logic
+    unsigned long now = millis();
+    if (now - lastTime >= 500) {
+        lastTime = now;
+
+        if (!noteOn) {
+            USBMIDI.sendNoteOn(0, 60, 127); // Note On
+            noteOn = true;
+        } else {
+            USBMIDI.sendNoteOff(0, 60, 0);  // Note Off
+            noteOn = false;
+        }
+    }
 }
 ```
 
@@ -127,4 +130,3 @@ Special thanks to **[jobitjoseph](https://github.com/jobitjoseph)** for his exce
 ## License
 
 This project is licensed under the MIT License - see the LICENSE file for details.
-
