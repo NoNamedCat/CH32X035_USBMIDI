@@ -32,3 +32,7 @@ setHandlePitchBend	KEYWORD2
 setHandleAfterTouch	KEYWORD2
 setHandlePolyPressure	KEYWORD2
 setHandleRealTime	KEYWORD2
+
+#######################################
+# Constants (LITERAL1)
+#######################################
