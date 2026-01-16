@@ -1,4 +1,4 @@
-![CH32X035 USB MIDI Library](img/bb7fb7ca-e147-4a9a-8a16-39f2ecf78176.png)
+![CH32X035 USB MIDI Library](img/title.png)
 
 # CH32X035 USB MIDI Library
 
@@ -14,17 +14,6 @@ This library leverages the hardware USBFS peripheral to provide a low-latency, c
 *   **Full Standard Support:** Supports the entire range of standard channel voice messages and real-time system messages.
 *   **Hardware Optimized:** Built on top of the CH32X035 USBFS for minimal overhead.
 
-## Device Identification (VID/PID)
-
-This library uses the following Vendor ID (VID) and Product ID (PID) by default:
-
-*   **VID:** `0x16C0` (Van Ooijen Technische Informatica - VOTI)
-*   **PID:** `0x27DD`
-
-These identifiers are widely recognized in the Open Source community (shared via [pid.codes](https://pid.codes) concepts or similar legacy agreements) for generic USB devices defined by software. This ensures that the device is correctly identified as a Class Compliant MIDI device on Windows, macOS, Linux, Android, and iOS.
-
-
-
 ## Supported MIDI Messages
 
 This library supports sending and receiving the following MIDI specifications:
@@ -39,7 +28,6 @@ This library supports sending and receiving the following MIDI specifications:
 | **Aftertouch (Channel)** | ✅ | ✅ | Global pressure |
 | **Poly Pressure** | ✅ | ✅ | Per-key pressure |
 | **Real-Time Messages** | ✅ | ✅ | Clock, Start, Stop, Continue |
-
 
 ## Installation
 

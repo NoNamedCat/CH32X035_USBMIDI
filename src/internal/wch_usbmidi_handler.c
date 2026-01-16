@@ -19,6 +19,49 @@ void rx_fifo_push(uint8_t b) {
     }
 }
 
+// TX FIFO (Non-blocking output)
+#define TX_FIFO_SIZE 256
+volatile uint8_t tx_fifo[TX_FIFO_SIZE];
+volatile uint16_t tx_head = 0;
+volatile uint16_t tx_tail = 0;
+
+static int tx_fifo_push(const uint8_t* data, uint16_t len) {
+    uint16_t next;
+    for(uint16_t i=0; i<len; i++) {
+        next = (tx_head + 1) % TX_FIFO_SIZE;
+        if(next == tx_tail) return 0; // Buffer full
+        tx_fifo[tx_head] = data[i];
+        tx_head = next;
+    }
+    return 1;
+}
+
+// Helper: Attempt to send pending data from FIFO to USB hardware
+static void USB_send_from_fifo(void) {
+    // CRITICAL SECTION START: Prevent ISR from interrupting FIFO/Register access
+    NVIC_DisableIRQ(USBFS_IRQn);
+
+    // Only send if endpoint is ready (NAK indicates idle/ready for new TX)
+    if((USBFSD->UEP2_CTRL_H & USBFS_UEP_T_RES_MASK) == USBFS_UEP_T_RES_NAK) {
+        uint16_t count = 0;
+        // Fill USB packet buffer (up to 64 bytes) from FIFO
+        while(tx_head != tx_tail && count < 64) {
+            wch_usbmidi_EP2_buffer[64 + count] = tx_fifo[tx_tail];
+            tx_tail = (tx_tail + 1) % TX_FIFO_SIZE;
+            count++;
+        }
+
+        if(count > 0) {
+            USBFSD->UEP2_TX_LEN = count;
+            // Set to ACK to transmit
+            USBFSD->UEP2_CTRL_H = (USBFSD->UEP2_CTRL_H & ~USBFS_UEP_T_RES_MASK) | USBFS_UEP_T_RES_ACK;
+        }
+    }
+    
+    // CRITICAL SECTION END
+    NVIC_EnableIRQ(USBFS_IRQn);
+}
+
 // Internal Init
 static inline void USB_EP_init(void) {
   USBFSD->UEP0_DMA    = (uint32_t)wch_usbmidi_EP0_buffer;
@@ -204,21 +247,25 @@ static inline void MIDI_EP2_OUT(void) {
 }
 
 static inline void MIDI_EP2_IN(void) {
-    // TX Completed
+    // TX Completed, hardware automatically NAKs subsequent IN tokens until we re-arm
     USBFSD->UEP2_CTRL_H = (USBFSD->UEP2_CTRL_H & ~USBFS_UEP_T_RES_MASK) | USBFS_UEP_T_RES_NAK;
+    
+    // Check if more data is waiting in FIFO and send it
+    USB_send_from_fifo();
 }
 
-// Helper to write (similar to CDC but blocking/busy wait for now)
+// Helper to write (Non-blocking using FIFO)
 uint32_t USB_write(const uint8_t* buf, uint32_t len) {
-    if(len > 64) len = 64;
+    if(len == 0) return 0;
     
-    // Wait for previous transfer to complete (T_RES == NAK)
-    while((USBFSD->UEP2_CTRL_H & USBFS_UEP_T_RES_MASK) == USBFS_UEP_T_RES_ACK);
+    // Try to push to buffer
+    if(!tx_fifo_push(buf, len)) {
+        return 0; // Buffer full, packet dropped (non-blocking)
+    }
 
-    // Use the second half of the buffer for TX (offset 64) to avoid collision with RX
-    memcpy(&wch_usbmidi_EP2_buffer[64], buf, len); 
-    USBFSD->UEP2_TX_LEN = len;
-    USBFSD->UEP2_CTRL_H = (USBFSD->UEP2_CTRL_H & ~USBFS_UEP_T_RES_MASK) | USBFS_UEP_T_RES_ACK;
+    // Trigger transmission if hardware is idle
+    USB_send_from_fifo();
+    
     return len;
 }
 
