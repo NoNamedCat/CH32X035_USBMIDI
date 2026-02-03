@@ -242,7 +242,7 @@ static inline void MIDI_EP2_OUT(void) {
         for(int i=0; i<len; i++) {
             rx_fifo_push(wch_usbmidi_EP2_buffer[i]);
         }
-        USBFSD->UEP2_CTRL_H = USBFS_UEP_R_RES_ACK | USBFS_UEP_R_TOG; // Re-arm for next
+        USBFSD->UEP2_CTRL_H = USBFS_UEP_R_RES_ACK | USBFS_UEP_AUTO_TOG; // Re-arm for next
     }
 }
 
